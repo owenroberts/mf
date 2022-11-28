@@ -1,0 +1,31 @@
+html { height: 100%; }
+
+body { 
+	margin: 0; 
+	overflow: hidden;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 100%;
+	/*background-color: black;*/
+}
+
+#lines {
+	/*margin-top: -100px;*/
+	image-rendering: pixelated;
+}
+
+#three {
+	position: absolute;
+	top: calc(50% - 260px);
+	background: rgb(95,89,109);
+	background: radial-gradient(ellipse, #333 10%, #000 100%);
+	opacity: 0;
+	transition: opacity 1s ease-in-out;
+	pointer-events: none;
+}
+
+#three.active {
+	opacity: 1;
+
+}

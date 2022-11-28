@@ -1,0 +1,7 @@
+node_modules
+.DS_Store
+doc/
+build/src_maps/
+notes.txt
+text_tools
+lines.zip

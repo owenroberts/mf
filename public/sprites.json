@@ -1,0 +1,15 @@
+{
+	"tv_frame": { "src": "lines/drawings/tv_frame.json" },
+	"cat_close" : { "src": "lines/drawings/cat_close.json" },
+	"cat_letters" : { "src": "lines/drawings/cat_letters.json" },
+	"cat_main" : { "src": "lines/drawings/cat_main.json" },
+	"dog_close" : { "src": "lines/drawings/dog_close.json" },
+	"dog_letters" : { "src": "lines/drawings/dog_letters.json" },
+	"dog_main" : { "src": "lines/drawings/dog_main.json" },
+	"tv_close" : { "src": "lines/drawings/tv_close.json" },
+	"tv_frame" : { "src": "lines/drawings/tv_frame.json" },
+	"tv_main" : { "src": "lines/drawings/tv_main.json" },
+	"cat_letters": { "src": "lines/drawings/cat_letters.json" },
+	"dog_letters": { "src": "lines/drawings/dog_letters.json" }
+
+}
