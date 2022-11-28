@@ -1,0 +1,9 @@
+[submodule "doodoo"]
+	path = doodoo
+	url = https://github.com/owenroberts/doodoo.git
+[submodule "lines"]
+	path = lines
+	url = https://github.com/owenroberts/lines.git
+[submodule "text_tools"]
+	path = text_tools
+	url = https://github.com/owenroberts/text_tools
