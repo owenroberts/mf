@@ -19,11 +19,23 @@ lines.load({
 });
 
 let cat, dog, tv, catText, dogText;
+let speakers;
 let catClose, dogClose, tvClose;
 let sequencer;
 let useSound = false;
 
-let catTrack = 20, dogTrack = 20;;
+let catTrack = 22, dogTrack = 24;
+let threeScene = ThreeScene();
+
+/* debug */
+let pause = false;
+document.addEventListener('keydown', ev => {
+	if (ev.which === 80) {
+		console.log('pause');
+		pause = !pause;
+		console.log(pause);
+	}
+})
 
 lines.start = function() {
 
@@ -33,11 +45,10 @@ lines.start = function() {
 		x: 100, 
 		y: 100, 
 		msg: 'Click to start with sound', 
-		wrap: 20, 
+		wrap: 26, 
 		letters: sprites.cat_letters,
 		track: catTrack,
 		countForward: true,
-		countBackward: true,
 	});
 	lines.scenes.start.addUI(startSoundButton);
 	startSoundButton.onClick = function() {
@@ -50,11 +61,10 @@ lines.start = function() {
 		x: 100, 
 		y: 200, 
 		msg: 'Click to start without sound', 
-		wrap: 25, 
+		wrap: 29, 
 		letters: sprites.cat_letters,
-		track: dogTrack,
+		track: catTrack,
 		countForward: true,
-		countBackward: true,
 	});
 	lines.scenes.start.addUI(startSilentButton);
 	startSilentButton.onClick = function() {
@@ -126,23 +136,32 @@ lines.start = function() {
 	});
 
 	sequencer = Sequencer(catText, dogText, changeScene);
+	speakers = { cat: catClose, dog: dogClose };
 	lines.scenes.current = 'start';
 	console.log('lines', lines);
+	threeScene.start();
 };
 
-function changeScene(sceneType, isDialog) {
-	console.log('change scene', sceneType, isDialog);
+function changeScene(sceneType, isDialog, endDialog) {
+
+	if (endDialog && lines.scenes.currentName === sceneType) {
+		console.log('endDialog')
+		const speaker = sceneType === 'cat' ? catClose : dogClose;
+		speaker.animation.state = Cool.randomInt(0, 5);
+		return;
+	}
+
 	if (sceneType === 'cat') {
 		const scene = isDialog ? 'cat' : Cool.choice(['cat', 'dog']);
 		lines.scenes.current = scene;
 		if (scene === 'cat') {
 			catClose.animation.state = isDialog ? 
-				Cool.randomInt(5, 10) :
-				Cool.randomInt(0, 4) ;
-
+				Cool.randomInt(6, 10) :
+				Cool.randomInt(0, 5) ;
 		}
+
 		if (scene === 'dog') {
-			dogClose.animation.state = Cool.randomInt(0, 4);
+			dogClose.animation.state = Cool.randomInt(0, 5);
 		}
 	}
 
@@ -150,12 +169,12 @@ function changeScene(sceneType, isDialog) {
 		const scene = isDialog ? 'dog' : Cool.choice(['cat', 'dog']);
 		lines.scenes.current = scene;
 		if (scene === 'cat') {
-			catClose.animation.state = Cool.randomInt(0, 4);
+			catClose.animation.state = Cool.randomInt(0, 5);
 		}
 		if (scene === 'dog') {
 			dogClose.animation.state = isDialog ?
-				Cool.randomInt(5, 10):
-				Cool.randomInt(0, 4);
+				Cool.randomInt(6, 10):
+				Cool.randomInt(0, 5);
 		}
 	}
 
@@ -173,20 +192,23 @@ function changeScene(sceneType, isDialog) {
 	
 }
 
-lines.update = function(timeElapsed) {
-	// console.log('udpate', timeElapsed);
-};
-
 lines.draw = function(timeElapsed) {
+	if (threeScene.isActive()) return;
 	lines.scenes.current.display();
 
+	if (pause) return;
 	if (sequencer.isActive()) {
 		const sequenceIsFinished = sequencer.update(timeElapsed);
 		if (sequenceIsFinished === true) {
 			changeScene('tv');
-			console.log('start three');
-			// start three scene
-			// start timeout to return to sequencer
+			threeScene.start();
+
+			setTimeout(() => {
+				console.log('back');
+				threeScene.stop();
+				changeScene('main');
+				sequencer.start();
+			}, 1000 * 10);
 		}
 	}
 };

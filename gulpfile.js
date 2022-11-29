@@ -13,7 +13,6 @@ const npmDist = require('gulp-npm-dist');
 const iife = require('gulp-iife');
 const logger = require('node-color-log');
 
-
 function browserSyncTask() {
 	return browserSync.init({
 		port: 8001,
@@ -53,7 +52,7 @@ function doodooCopy() {
 	return src([
 			'./doodoo/build/doodoo.min.js',
 			'./doodoo/build/src_maps/doodoo.min.js.map',
-		])
+		], { base: './doodoo/build/' })
 		.pipe(dest('./build'))
 		.pipe(browserSync.stream());
 }
@@ -73,6 +72,7 @@ function linesCopy() {
 
 function watchTask(){
 	watch('src/**/*.js', series(jsTask));
+	watch('text_tools/src/*.js', () => { browserSync.reload() });
 	if (doodoo) {
 		watch(['./doodoo/src/*.js'], series(doodoo.exportTask, doodooCopy));
 	}

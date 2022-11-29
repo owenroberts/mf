@@ -15,6 +15,7 @@ function Sequencer(catText, dogText, changeScene) {
 	let delay = 2; // units?
 	let isActive = false;
 	let currentText, currentSpeaker, nextDelay;
+	let currentDialog = 'start'; // start, new
 	let speakers = {
 		cat: catText,
 		dog: dogText,
@@ -28,53 +29,93 @@ function Sequencer(catText, dogText, changeScene) {
 	let grammarsLoaded = false;
 
 	let cfgURL = './text_tools/data/FEAR_AND_TREMBLING-cfg.json';
-	let cfg = new CFGGenerator();
+	let cfg = new CFGGenerator({
+		tagChance: 1,
+		filterChance: 1,
+	});
 
 	async function loadGrammarFiles() {
 		const cfgFile = await fetch(cfgURL).then(response => response.json());
 		cfg.feed('cat', cfgFile);
 		cfg.feed('dog', cfgFile);
-		console.log(cfg);
-		console.log(cfg.getText('cat', 'S', { 'S': [['I', 'VB', 'a', 'NN']] }));
-		// console.log(cfg.getText('dog'));
-
 	}
 	loadGrammarFiles();
 
-	function startDialog() {
-		const start = Cool.choice(['cat', 'dog']);
+	function getRandomDelay(min, max) {
+		return Cool.randomInt(min || 1, max || 3);
+	}
 
+	function startDialog() {
+		currentDialog = 'start';
 		const [speaker1, speaker2] = Cool.shuffle(['cat', 'dog']);
 		currentText = speakers[speaker1];
 
 		parts.push({
 			speaker: speaker1,
 			text: "I'm hungry.",
-			delay: Cool.randomInt(2, 4),
+			delay: getRandomDelay()
 		});
 
 		parts.push({
 			speaker: speaker2,
 			text: "Me too.",
-			delay: Cool.randomInt(2, 4),
+			delay: getRandomDelay()
 		});
 
 		parts.push({
 			speaker: speaker1,
 			text: "When will we eat again?",
-			delay: Cool.randomInt(2, 4),
+			delay: getRandomDelay()
 		});
 
 		parts.push({
 			speaker: speaker2,
 			text: "I don't know.",
-			delay: Cool.randomInt(2, 5),
+			delay: getRandomDelay()
 		});
 
 		parts.push({
 			speaker: speaker1,
 			text: "Should we watch some tv?",
-			delay: Cool.randomInt(2, 5),
+			delay: getRandomDelay()
+		});
+	}
+
+	function newDialog() {
+		currentDialog = 'new';
+		const [speaker1, speaker2] = Cool.shuffle(['cat', 'dog']);
+		currentText = speakers[speaker1];
+
+		parts.push({
+			speaker: speaker1,
+			text: "What was the point of that?",
+			delay: getRandomDelay()
+		});
+
+		parts.push({
+			speaker: speaker2,
+			text: cfg.getText(speaker2, 'C', { 'C': [["I think it was about", "DT", "NN", "of", "NN", "."]] }).text,
+			delay: getRandomDelay()
+		});
+
+		parts.push({
+			speaker: speaker1,
+			text: cfg.getText(speaker1, 'C', { 'C': [["You don't think it was", "Q"]] }).text,
+			delay: getRandomDelay()
+		});
+
+		parts.push({
+			speaker: speaker2,
+			text: cfg.getText(speaker2, 'C', { 'C': [["I guess it might have been", "S"]] }).text,
+			delay: getRandomDelay()
+		});
+
+		// add raandom here
+
+		parts.push({
+			speaker: speaker1,
+			text: cfg.getText(speaker1, 'C', { 'C': [["I don't think we really know what it was about."]] }).text,
+			delay: getRandomDelay()
 		});
 	}
 
@@ -90,11 +131,22 @@ function Sequencer(catText, dogText, changeScene) {
 		if (count <= delay) return count += timeElapsed / 1000;
 
 		if (!currentSpeaker && parts.length === 0) {
-			isActive = false;
-			return true;
+			if (currentDialog === 'start') {
+
+				// newDialog after three scene ...
+				currentSpeaker = false;
+				newDialog();
+				
+				// start three js scene here
+				isActive = false;
+				return true;
+			
+			} else if (currentDialog === 'new') {
+				currentSpeaker = false;
+				startDialog();
+			}
 		}
 
-		// if (voices.length === 0) count = -1; // ?
 		if (!currentSpeaker) {
 			// set speaking character and new dialog
 			const part = parts.shift();
@@ -115,7 +167,7 @@ function Sequencer(catText, dogText, changeScene) {
 			count = 0;
 			currentText.isActive = false;
 			changeScene(Cool.random(['cat', 'dog', 'tv', 'main']), false);
-			currentSpeaker = undefined;
+			currentSpeaker = false;
 		}
 	}
 

@@ -43,6 +43,7 @@
     "sass": "^1.55.0"
   },
   "dependencies": {
-    "stats.js": "^0.17.0"
+    "stats.js": "^0.17.0",
+    "three.js": "^0.77.1"
   }
 }
