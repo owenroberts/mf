@@ -42,7 +42,7 @@ function Sequencer(catText, dogText, changeScene) {
 	loadGrammarFiles();
 
 	function getRandomDelay(min, max) {
-		return Cool.randomInt(min || 1, max || 3);
+		return Cool.randomInt(min || 1, max || 2);
 	}
 
 	function startDialog() {

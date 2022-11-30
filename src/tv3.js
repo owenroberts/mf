@@ -31,14 +31,14 @@ function ThreeScene() {
 	// const camera = new THREE.OrthographicCamera( w / 80 / - 2, w / 80 / 2, h / 80 / 2, h / 80 / - 2, 1, 1000 );
 	// camera.position.z = 10;
 
-	const ambientLight = new THREE.AmbientLight({ color: 0x111111 });
+	const ambientLight = new THREE.AmbientLight( 0x2e2e2e, 1 );
 	scene.add(ambientLight);
 
 	const pointLightBack = new THREE.PointLight( 0xffffff, 1 );
 	pointLightBack.position.set(0, 0, -10);
 	scene.add(pointLightBack);
 
-	const pointLightFront = new THREE.PointLight( 0xffffff, 1 );
+	const pointLightFront = new THREE.PointLight( 0xffffff, 0.75 );
 	pointLightFront.position.set(0, 0, 10);
 	scene.add(pointLightFront);
 
@@ -82,16 +82,24 @@ function ThreeScene() {
 	const loader = new THREE.GLTFLoader( loadingManager ).setPath( './public/models/' );
 	let catModel, dogModel, tvModel;
 	let catMixer, dogMixer, tvMixer;
-	
-	loader.load( 'cat2.glb', gltf => {
-		catModel = gltf.scene;
-		scene.add( catModel );
-		catMixer = new THREE.AnimationMixer( catModel );
-		const clips = gltf.animations;
-		const clip = THREE.AnimationClip.findByName( clips, 'Talking' );
-		const action = catMixer.clipAction( clip );
-		action.play();
-	} );
+	let chars = {
+		cat: { url: 'cat2.glb', index: 1 },
+		dog: { url: 'dog2.glb', index: 2 },
+		tv: { url: 'tv2.glb',  index: 0 },
+	};
+
+	for (const key in chars) {
+		const char = chars[key];
+		loader.load( char.url, gltf => {
+			char.model = gltf.scene;
+			scene.add( char.model );
+			char.mixer = new THREE.AnimationMixer( char.model );
+			const clips = gltf.animations;
+			const clip = THREE.AnimationClip.findByName( clips, 'Talking' );
+			const action = char.mixer.clipAction( clip );
+			action.play();
+		} );
+	}
 
 	const letterModels = {};
 	loader.load( 'letters.glb' , gltf => {
@@ -102,12 +110,15 @@ function ThreeScene() {
 
 	loadingManager.onLoad = () => {
 		console.log('models loaded');
-		setup();
+		// setup();
 	};
 
 	let models = [];
 	let rotators = [];
 	let clouds = [];
+
+	const letterGroup = new THREE.Group();
+	scene.add( letterGroup );
 
 	function Rotator( model ) {
 
@@ -184,6 +195,14 @@ function ThreeScene() {
 	}
 
 	function setup() {
+
+		rotators = [];
+
+		for (let i = letterGroup.children.length - 1; i >= 0; i--) {
+			scene.remove( letterGroup.children[i] );
+			letterGroup.remove( letterGroup.children[i] );
+		}
+
 		const letterList = Object.keys(letterModels);
 		const objIndexes = Cool.shuffle([0, 1, 2, 3, 4, 5, 6, 7, 8]);
 
@@ -194,64 +213,63 @@ function ThreeScene() {
 			for (let j = 0; j < 3; j++) {
 				const x = i * d[0] - d[0];
 				const y = j * d[1] - d[1];
-				if (objIndexes[0] === i + j * 3) {
-					catModel.position.set( x, y, 0 );
-					catModel.traverse( child => {
-						if ( child.material ) child.material = letterMaterial;
-					});
-					continue;
+
+				let doContinue = false;
+				for (const key in chars) {
+					const { index, model } = chars[key];
+					if (objIndexes[index] === i + j * 3) {
+						model.position.set( x, y, 0 );
+						model.rotation.set( 0, 0, 0 ); // reset
+						model.traverse( child => {
+							if ( child.material ) child.material = letterMaterial;
+						});
+						rotators.push( Rotator(model ) );
+						doContinue = true;
+					}
 				}
 
-				if (Cool.chance(0.1)) continue;
+				if ( doContinue ) continue;
 
-				const letter = Cool.choice(Object.keys(letterModels));
+				const letter = Cool.choice( Object.keys( letterModels ) );
 				const letterMesh = letterModels[letter].clone();
 				letterMesh.material = letterMaterial;
 				letterMesh.position.set(x, y, 0);
-				scene.add(letterMesh);
-				rotators.push(Rotator(letterMesh));
+				letterGroup.add( letterMesh );
+				rotators.push( Rotator( letterMesh ) );
 			}
 		}
 
 		// clouds
-		const cloudLetter = Cool.choice(letterList);
-		const cloudMaterial = getRandomMaterial();
-		for (let x = -5; x <= 5; x += 2) {
+		// const cloudLetter = Cool.choice(letterList);
+		// const cloudMaterial = getRandomMaterial();
+		// for (let x = -5; x <= 5; x += 2) {
 			// clouds.push(Cloud(letterModels[cloudLetter], cloudMaterial));
-		}
+		// }
 
 	}
 
 	function getRandomMaterial() {
 		let color = new THREE.Color();
-		color.setHex(Math.random() * 0xdcdcdc);
+		// color.setHex(0x7d7d7d + Math.random() * 0xdcdcdc);
+		color.setRGB(
+			Cool.random(0.5, 0.7),
+			Cool.random(0.7, 0.8),
+			Cool.random(0.7, 0.9),
+		);
 		let material = new THREE.MeshStandardMaterial({ 
 			color: color.getHex()
 		});
 		return material;
 	}
 
-	function addModel( model ) {
-		for (let i = 0; i < 3; i++) {
-			let copy = cloneGltf( model ).scene;
-
-			copy.traverse(child => {
-				if (child.material) {
-					child.material = getRandomMaterial();
-				}
-			});
-
-			copy.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
-			copy.position.set( i * 5 - 5, 0, 0 );
-			models.push( copy );
-			scene.add( copy );
-		}
-	}
-
 	const clock = new THREE.Clock();
+	let delta;
 	function animate() {
+		
 		if (isActive) {
 			requestAnimationFrame( animate );
+			delta = clock.getDelta();
+			
 			for (let i = 0, len = rotators.length; i < len; i++) {
 				rotators[i].update();
 			}
@@ -260,7 +278,9 @@ function ThreeScene() {
 				clouds[i].update();
 			}
 
-			catMixer.update( clock.getDelta() );
+			for (const key in chars) {
+				chars[key].mixer.update( delta );
+			}
 
 			// renderer.render( scene, camera );
 			composer.render();
@@ -270,6 +290,7 @@ function ThreeScene() {
 	return {
 		start() {
 			isActive = true;
+			setup();
 			animate();
 			canvas.classList.add('active');
 		},

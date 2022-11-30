@@ -34,6 +34,10 @@ document.addEventListener('keydown', ev => {
 		console.log('pause');
 		pause = !pause;
 		console.log(pause);
+	};
+
+	if (Cool.keys[ev.which] === 's') {
+		threeScene.start();
 	}
 })
 
@@ -139,7 +143,7 @@ lines.start = function() {
 	speakers = { cat: catClose, dog: dogClose };
 	lines.scenes.current = 'start';
 	console.log('lines', lines);
-	threeScene.start();
+	// threeScene.start();
 };
 
 function changeScene(sceneType, isDialog, endDialog) {
@@ -203,12 +207,20 @@ lines.draw = function(timeElapsed) {
 			changeScene('tv');
 			threeScene.start();
 
-			setTimeout(() => {
-				console.log('back');
-				threeScene.stop();
-				changeScene('main');
-				sequencer.start();
-			}, 1000 * 10);
+			let channelCount = 0;
+			let channelNumber = Cool.randomInt(3, 6);
+			let channelTime = Cool.randomInt(400, 2000);
+			let channelInterval = setInterval(() => {
+				if (channelCount <= channelNumber) {
+					threeScene.start();
+					channelCount++;
+				} else {
+					threeScene.stop();
+					changeScene('main');
+					setInterval(() => { sequencer.start(); }, 300);
+					clearInterval(channelInterval);
+				}
+			}, channelTime);
 		}
 	}
 };
