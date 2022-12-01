@@ -43,15 +43,15 @@ function Sequencer(catText, dogText, changeScene) {
 	loadGrammarFiles();
 
 	function setupVoice() {
+		if (!window.speechSynthesis) return;
 		voiceSynth = window.speechSynthesis;
-		const getSpeechInterval = setInterval(function() {
+		voiceSynth.onvoiceschanged = function() {
 			const voiceList = voiceSynth.getVoices();
-			if (voices.length !== 0) {
-				voices.cat = voiceList[0];
-				voices.dog = voiceList[1];
-				clearInterval(getSpeechInterval);
-			}
-		}, 16);
+			const fred = voiceList.find(v => v.name === 'Fred');
+			const victoria = voiceList.find(v => v.name === 'Victoria');
+			voices.cat = victoria ? victoria : voiceList[1];
+			voices.dog = fred ? fred : voiceList[0];
+		};
 	}
 
 	function getRandomDelay(min, max) {

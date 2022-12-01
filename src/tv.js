@@ -9,7 +9,7 @@ const lines = new Game({
 	debug: true,
 	stats: true,
 	suspend: false,
-	scenes: ['main', 'cat', 'dog', 'tv', 'start'],
+	scenes: ['loading', 'main', 'cat', 'dog', 'tv', 'start'],
 	lineWidth: 1,
 	events: ['mouse']
 });
@@ -26,6 +26,7 @@ let useSound = false;
 
 let catTrack = 22, dogTrack = 24;
 let threeScene = ThreeScene();
+let doodoos = {};
 
 /* debug */
 let pause = false;
@@ -45,6 +46,44 @@ lines.start = function() {
 
 	const { sprites } = lines.anims;
 
+	/* loading */
+	const loadingText = new TextSprite({
+		x: 200,
+		y: 200,
+		msg: "loading",
+		letters: sprites.dog_letters,
+		track: dogTrack,
+		countForward: true,
+		countBackward: true,
+		repeatCount: true,
+		delay: 60,
+	});
+	lines.scenes.loading.addToDisplay(loadingText);
+
+	/* load doodoo comps */
+	async function loadComps() {
+		const mainTheme = await fetch('./doodoo/compositions/tv1_theme.json')
+			.then(res => res.json());
+		const tvTheme = await fetch('./doodoo/compositions/tv1_tv.json')
+			.then(res => res.json());
+		
+		doodoos.main = new Doodoo({ 
+			...mainTheme, 
+			samplesURL: './doodoo/samples/',
+			volume: -20,
+			autoStart: false, 
+		});
+		
+		doodoos.tv = new Doodoo({ 
+			...tvTheme, 
+			autoStart: false, 
+			samplesURL: './doodoo/samples/',
+			volume: -6,
+		});
+
+		doodoos.main.play();
+	}
+
 	const startSoundButton = new TextButton({
 		x: 100, 
 		y: 100, 
@@ -58,6 +97,7 @@ lines.start = function() {
 	startSoundButton.onClick = function() {
 		lines.scenes.current = 'main';
 		useSound = true;
+		loadComps();
 		sequencer.setupVoice();
 		sequencer.start();
 	};
@@ -80,7 +120,7 @@ lines.start = function() {
 
 	const tvFrame = new Sprite();
 	tvFrame.addAnimation(sprites.tv_frame);
-	lines.scenes.addToDisplay(tvFrame, ['start', 'main', 'cat', 'dog', 'tv']);
+	lines.scenes.addToDisplay(tvFrame, ['loading', 'start', 'main', 'cat', 'dog', 'tv']);
 
 	cat = new Sprite(500, -20);
 	cat.addAnimation(sprites.cat_main);
@@ -142,15 +182,15 @@ lines.start = function() {
 
 	sequencer = Sequencer(catText, dogText, changeScene);
 	speakers = { cat: catClose, dog: dogClose };
+	
 	lines.scenes.current = 'start';
-	console.log('lines', lines);
+	// console.log('lines', lines);
 	// threeScene.start();
 };
 
 function changeScene(sceneType, isDialog, endDialog) {
 
 	if (endDialog && lines.scenes.currentName === sceneType) {
-		console.log('endDialog')
 		const speaker = sceneType === 'cat' ? catClose : dogClose;
 		speaker.animation.state = Cool.randomInt(0, 5);
 		return;
@@ -207,6 +247,8 @@ lines.draw = function(timeElapsed) {
 		if (sequenceIsFinished === true) {
 			changeScene('tv');
 			threeScene.start();
+			doodoos.main.stop();
+			doodoos.tv.play();
 
 			let channelCount = 0;
 			let channelNumber = Cool.randomInt(3, 6);
@@ -217,6 +259,9 @@ lines.draw = function(timeElapsed) {
 					channelCount++;
 				} else {
 					threeScene.stop();
+					doodoos.tv.stop();
+					doodoos.main.play();
+
 					changeScene('main');
 					setInterval(() => { sequencer.start(); }, 300);
 					clearInterval(channelInterval);

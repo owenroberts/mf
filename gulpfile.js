@@ -74,7 +74,7 @@ function watchTask(){
 	watch('src/**/*.js', series(jsTask));
 	watch('text_tools/src/*.js', () => { browserSync.reload() });
 	if (doodoo) {
-		watch(['./doodoo/src/*.js'], series(doodoo.exportTask, doodooCopy));
+		watch(['./doodoo/src/*.js', './doodoo/composer/src/**/*.js'], series(doodoo.exportTask, doodooCopy));
 	}
 	if (lines) {
 		watch([
