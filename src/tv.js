@@ -58,6 +58,7 @@ lines.start = function() {
 	startSoundButton.onClick = function() {
 		lines.scenes.current = 'main';
 		useSound = true;
+		sequencer.setupVoice();
 		sequencer.start();
 	};
 

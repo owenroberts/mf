@@ -7,8 +7,6 @@
 
 function Sequencer(catText, dogText, changeScene) {
 
-	// get grammars
-
 	const parts = [];
 	let index = 0;
 	let count = 0;
@@ -20,6 +18,9 @@ function Sequencer(catText, dogText, changeScene) {
 		cat: catText,
 		dog: dogText,
 	};
+
+	const voices = {};
+	let voiceSynth;
 
 	/* add initial dialog, return here after each run through */
 	startDialog();
@@ -40,6 +41,18 @@ function Sequencer(catText, dogText, changeScene) {
 		cfg.feed('dog', cfgFile);
 	}
 	loadGrammarFiles();
+
+	function setupVoice() {
+		voiceSynth = window.speechSynthesis;
+		const getSpeechInterval = setInterval(function() {
+			const voiceList = voiceSynth.getVoices();
+			if (voices.length !== 0) {
+				voices.cat = voiceList[0];
+				voices.dog = voiceList[1];
+				clearInterval(getSpeechInterval);
+			}
+		}, 16);
+	}
 
 	function getRandomDelay(min, max) {
 		return Cool.randomInt(min || 1, max || 2);
@@ -156,7 +169,15 @@ function Sequencer(catText, dogText, changeScene) {
 			currentText.isActive = true;
 			currentText.setMsg(part.text);
 			changeScene(currentSpeaker, true);
+			
 			// voice
+			if (voiceSynth && voices[part.speaker]) {
+				const utterance = new SpeechSynthesisUtterance(part.text);
+				utterance.rate = 0.75;
+				utterance.voice = voices[part.speaker];
+				voiceSynth.speak(utterance);
+			}
+
 		}
 		
 		const speakerIsFinished = currentText.display();
@@ -173,6 +194,7 @@ function Sequencer(catText, dogText, changeScene) {
 
 	return { 
 		update, 
+		setupVoice,
 		isActive() { return isActive; },
 		start() { isActive = true; }
 	};
