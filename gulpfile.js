@@ -82,6 +82,18 @@ function textToolsCopy() {
 		.pipe(browserSync.stream());
 }
 
+function webBuild() {
+	return src([
+			'./build/*.js',
+			'./public/*',
+			'./lib/**/*.js',
+			'./lines/drawings/*',
+			'./doodoo/samples/*',
+			'index.html',
+		], { base: './' })
+		.pipe(dest('./web'));
+}
+
 function watchTask(){
 	watch('src/**/*.js', series(jsTask));
 	if (doodoo) {
@@ -111,6 +123,7 @@ function cacheBustTask(){
 task('js', jsTask);
 task('watch', parallel(cacheBustTask, browserSyncTask, watchTask));
 task('default', parallel('watch'));
+task('web', webBuild);
 
 const libTasks = [libTask];
 if (lines) libTasks.push(lines.exportTask, linesCopy);
