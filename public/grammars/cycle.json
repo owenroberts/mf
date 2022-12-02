@@ -1,0 +1,21 @@
+{
+	"A": [["A1", "A2", "A3", "A4", "A5"]],
+	
+	"A1": [["I'm hungry."]],
+	"A2": [["Me too."]],
+	"A3": [
+		["When will we eat again?"], 
+		["How long has it been since the last time we ate?"], 
+		["Where are they?"], 
+		["How many days has it been?"]
+	],
+	"A4": [["I don't know."]],
+	"A5": [
+		["Should we watch some tv?"],
+		["Let's watch some tv."],
+		["Let's see what's on the tv."]
+	],
+
+	"B": []
+
+}

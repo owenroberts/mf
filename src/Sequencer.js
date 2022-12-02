@@ -1,8 +1,8 @@
 /*
 	sequence dialog and tv scenes
 	A - hungry
-	B - tv
-	C - convo about tv -> back to A
+	--> tv
+	B - convo about tv -> back to A
 */
 
 function Sequencer(catText, dogText, changeScene) {
@@ -23,27 +23,34 @@ function Sequencer(catText, dogText, changeScene) {
 	let voiceSynth;
 
 	/* add initial dialog, return here after each run through */
-	startDialog();
+	// startDialog();
 	// nextPart();
+	
 
 	// load grammar to use later
 	let grammarsLoaded = false;
 
 	let codexURL = './public/grammars/CODEX-cfg.json';
-	let mysteryURL = './public/grammars/The_Mystery_of_the_Apocalypse-cfg.json';
+	let mystyURL = './public/grammars/The_Mystery_of_the_Apocalypse-cfg.json';
+	let cycleURL = './public/grammars/cycle.json';
 	let cfg = new CFGGenerator({
 		tagChance: 1,
 		filterChance: 1,
 	});
 
 	async function loadGrammarFiles() {
-		const codexFile = await fetch(codexURL).then(response => response.json());
-		const mysteryFile = await fetch(mysteryURL).then(response => response.json());
+		const codexFile = await fetch(codexURL).then(res => res.json());
+		const mystyFile = await fetch(mystyURL).then(res => res.json());
+		const cycleFile = await fetch(cycleURL).then(res => res.json());
 		
-		cfg.feed('cat', mysteryFile);
+		cfg.feed('cat', mystyFile);
+		cfg.feed('cat', cycleFile);
 		cfg.feed('dog', codexFile);
+		cfg.feed('dog', cycleFile);
 
-		console.log(cfg.getText('cat', 'C', { 'C': [["I think it was about", "DT", "NN", "of", "NN", "."]] }))
+		getDialog('A');
+
+		
 	}
 	loadGrammarFiles();
 
@@ -61,6 +68,21 @@ function Sequencer(catText, dogText, changeScene) {
 
 	function getRandomDelay(min, max) {
 		return Cool.randomInt(min || 1, max || 2);
+	}
+
+	function getDialog(start) {
+		currentDialog = start;
+		const [speaker1, speaker2] = Cool.shuffle(['cat', 'dog']);
+		currentText = speakers[speaker1];
+
+		let cycle = cfg.getText(speaker1, start);
+
+		for (let i = 0; i < cycle.tags.length; i++) {
+			parts.push({
+				text: cycle.tags[i].word,
+				speaker: i % 2 === 0 ? speaker1 : speaker2,
+			});
+		}
 	}
 
 	function startDialog() {
@@ -131,7 +153,7 @@ function Sequencer(catText, dogText, changeScene) {
 		if (count <= delay) return count += timeElapsed / 1000;
 
 		if (!currentSpeaker && parts.length === 0) {
-			if (currentDialog === 'start') {
+			if (currentDialog === 'A') {
 
 				// newDialog after three scene ...
 				currentSpeaker = false;
