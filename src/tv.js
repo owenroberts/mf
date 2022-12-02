@@ -84,9 +84,13 @@ lines.start = function() {
 		doodoos.main.play();
 	}
 
+	const title = new Sprite(0, 0);
+	title.addAnimation(sprites.title);
+	lines.scenes.start.addToDisplay(title);
+
 	const startSoundButton = new TextButton({
 		x: 100, 
-		y: 100, 
+		y: 400, 
 		msg: 'Click to start with sound', 
 		wrap: 26, 
 		letters: sprites.cat_letters,
@@ -104,7 +108,7 @@ lines.start = function() {
 
 	const startSilentButton = new TextButton({
 		x: 100, 
-		y: 200, 
+		y: 500, 
 		msg: 'Click to start without sound', 
 		wrap: 29, 
 		letters: sprites.cat_letters,

@@ -85,7 +85,7 @@ function textToolsCopy() {
 function webBuild() {
 	return src([
 			'./build/*.js',
-			'./public/*',
+			'./public/**/*',
 			'./lib/**/*.js',
 			'./lines/drawings/*',
 			'./doodoo/samples/*',

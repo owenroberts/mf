@@ -10,6 +10,8 @@
 	"tv_frame" : { "src": "lines/drawings/tv_frame.json" },
 	"tv_main" : { "src": "lines/drawings/tv_main.json" },
 	"cat_letters": { "src": "lines/drawings/cat_letters.json" },
-	"dog_letters": { "src": "lines/drawings/dog_letters.json" }
+	"dog_letters": { "src": "lines/drawings/dog_letters.json" },
+	"title": { "src": "lines/drawings/mystery_fragments.json" }
+
 
 }
