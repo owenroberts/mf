@@ -3,6 +3,8 @@ require('dotenv').config()
 
 const doodoo = process.env.USE_DOODOO ? require('./doodoo/gulpfile') : null;
 const lines = process.env.USE_LINES ? require('./lines/gulpfile') : null;
+const textTools = process.env.USE_TEXT_TOOLS ? require('./text_tools/gulpfile') : null;
+
 
 const replace = require('gulp-replace');
 const sourcemaps = require('gulp-sourcemaps');
@@ -70,9 +72,18 @@ function linesCopy() {
 		.pipe(browserSync.stream());
 }
 
+function textToolsCopy() {
+	if (!textTools) return;
+	return src([
+			'./text_tools/build/text_tools.min.js',
+			'./text_tools/build/src_maps/text_tools.min.js.map',
+		], { base: './text_tools/build/' })
+		.pipe(dest('./build'))
+		.pipe(browserSync.stream());
+}
+
 function watchTask(){
 	watch('src/**/*.js', series(jsTask));
-	watch('text_tools/src/*.js', () => { browserSync.reload() });
 	if (doodoo) {
 		watch(['./doodoo/src/*.js', './doodoo/composer/src/**/*.js'], series(doodoo.exportTask, doodooCopy));
 	}
@@ -83,6 +94,10 @@ function watchTask(){
 			'./lines/game/src/*.js',
 		], 
 		series(lines.exportTask, linesCopy));
+	}
+
+	if (textTools) {
+		watch(textTools.files, series(textTools.exportTask, textToolsCopy))
 	}
 }
 
@@ -100,6 +115,12 @@ task('default', parallel('watch'));
 const libTasks = [libTask];
 if (lines) libTasks.push(lines.exportTask, linesCopy);
 if (doodoo) libTasks.push(doodoo.exportTask, doodooCopy);
+if (textTools) libTasks.push(textTools.exportTask, textToolsCopy);
 
 task('lib', series(...libTasks));
 task('build', series(...[...libTasks, jsTask]));
+if (textTools) {
+	task('copyTextData', series(function copyData() {
+		return textTools.copyData('./public/grammars/');
+	}));
+}

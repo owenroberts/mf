@@ -39,9 +39,11 @@ function Sequencer(catText, dogText, changeScene) {
 	async function loadGrammarFiles() {
 		const codexFile = await fetch(codexURL).then(response => response.json());
 		const mysteryFile = await fetch(mysteryURL).then(response => response.json());
-
+		
 		cfg.feed('cat', mysteryFile);
 		cfg.feed('dog', codexFile);
+
+		console.log(cfg.getText('cat', 'C', { 'C': [["I think it was about", "DT", "NN", "of", "NN", "."]] }))
 	}
 	loadGrammarFiles();
 
@@ -87,21 +89,26 @@ function Sequencer(catText, dogText, changeScene) {
 		currentText = speakers[speaker1];
 
 		let cycle = [];
-
 		cycle.push( "What do you think that was about?" );
-		cycle.push(	cfg.getSentence(speaker2, 'C', { 'C': [["I think it was about", "DT", "NN", "of", "NN", "."]] }) );
-		cycle.push( cfg.getSentence(speaker1, 'C', { 'C': [["You don't think it was about", "Q"]] }) );
-		cycle.push( cfg.getSentence(speaker2, 'C', { 'C': [["I guess it could be", "S"]] }) );
+		cycle.push(	cfg.getText(speaker2, 'C', { 'C': [["I think it was about", "DT", "NN", "of", "NN", "."]] }).text );
+		
+		// cycle.push( cfg.getText(speaker1, 'C', { 'C': [["You don't think it was about", "S", "?"]] }).text );
+		// replace question when there are Qs
+		cycle.push( cfg.getText(speaker1, 'C', { 'C': [["Oh I think it was about", "S"]] }).text );
+		
+		cycle.push( cfg.getText(speaker2, 'C', { 'C': [["I guess it could be", "S"]] }).text );
 		
 		let randomDialogs = Cool.choice([1, 3, 5]);
 		for (let i = 0; i < randomDialogs; i++) {
 			const speaker = i % 2 === 0 ? speaker1 : speaker2;
-			cycle.push( cfg.getSentence(speaker, 'C', { 'C': [Cool.choice(['S', 'S', 'E', 'F', 'Q'])] }) );
+			cycle.push( cfg.getText(speaker, 'C', { 'C': [['S']] 
+				// [Cool.choice(['S', 'S', 'E', 'F', 'Q'])] 
+			}).text );
 		}
 
-		cycle.push( cfg.getSentence(speaker1, 'C', { 'C': [["I don't think we really know what it was about."]] }) );
+		cycle.push( cfg.getText(speaker1, 'C', { 'C': [["I don't think we really know what it was about."]] }).text );
 
-		console.log(cycle);
+		// console.log(cycle);
 
 		for (let i = 0; i < cycle.length; i++) {
 			parts.push({
