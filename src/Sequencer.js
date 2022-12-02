@@ -29,16 +29,19 @@ function Sequencer(catText, dogText, changeScene) {
 	// load grammar to use later
 	let grammarsLoaded = false;
 
-	let cfgURL = './text_tools/data/FEAR_AND_TREMBLING-cfg.json';
+	let codexURL = './public/grammars/CODEX-cfg.json';
+	let mysteryURL = './public/grammars/The_Mystery_of_the_Apocalypse-cfg.json';
 	let cfg = new CFGGenerator({
 		tagChance: 1,
 		filterChance: 1,
 	});
 
 	async function loadGrammarFiles() {
-		const cfgFile = await fetch(cfgURL).then(response => response.json());
-		cfg.feed('cat', cfgFile);
-		cfg.feed('dog', cfgFile);
+		const codexFile = await fetch(codexURL).then(response => response.json());
+		const mysteryFile = await fetch(mysteryURL).then(response => response.json());
+
+		cfg.feed('cat', mysteryFile);
+		cfg.feed('dog', codexFile);
 	}
 	loadGrammarFiles();
 
@@ -63,35 +66,19 @@ function Sequencer(catText, dogText, changeScene) {
 		const [speaker1, speaker2] = Cool.shuffle(['cat', 'dog']);
 		currentText = speakers[speaker1];
 
-		parts.push({
-			speaker: speaker1,
-			text: "I'm hungry.",
-			delay: getRandomDelay()
-		});
+		let cycle = [];
+		cycle.push( "I'm hungry." );
+		cycle.push( "Me too." );
+		cycle.push( "When will we eat again?" );
+		cycle.push( "I don't know." );
+		cycle.push( "Should we watch some tv?" );
 
-		parts.push({
-			speaker: speaker2,
-			text: "Me too.",
-			delay: getRandomDelay()
-		});
-
-		parts.push({
-			speaker: speaker1,
-			text: "When will we eat again?",
-			delay: getRandomDelay()
-		});
-
-		parts.push({
-			speaker: speaker2,
-			text: "I don't know.",
-			delay: getRandomDelay()
-		});
-
-		parts.push({
-			speaker: speaker1,
-			text: "Should we watch some tv?",
-			delay: getRandomDelay()
-		});
+		for (let i = 0; i < cycle.length; i++) {
+			parts.push({
+				text: cycle[i],
+				speaker: i % 2 === 0 ? speaker1 : speaker2;
+			});
+		}
 	}
 
 	function newDialog() {
@@ -102,25 +89,21 @@ function Sequencer(catText, dogText, changeScene) {
 		parts.push({
 			speaker: speaker1,
 			text: "What was the point of that?",
-			delay: getRandomDelay()
 		});
 
 		parts.push({
 			speaker: speaker2,
 			text: cfg.getText(speaker2, 'C', { 'C': [["I think it was about", "DT", "NN", "of", "NN", "."]] }).text,
-			delay: getRandomDelay()
 		});
 
 		parts.push({
 			speaker: speaker1,
 			text: cfg.getText(speaker1, 'C', { 'C': [["You don't think it was", "Q"]] }).text,
-			delay: getRandomDelay()
 		});
 
 		parts.push({
 			speaker: speaker2,
 			text: cfg.getText(speaker2, 'C', { 'C': [["I guess it might have been", "S"]] }).text,
-			delay: getRandomDelay()
 		});
 
 		// add raandom here
@@ -128,7 +111,6 @@ function Sequencer(catText, dogText, changeScene) {
 		parts.push({
 			speaker: speaker1,
 			text: cfg.getText(speaker1, 'C', { 'C': [["I don't think we really know what it was about."]] }).text,
-			delay: getRandomDelay()
 		});
 	}
 
@@ -163,7 +145,7 @@ function Sequencer(catText, dogText, changeScene) {
 		if (!currentSpeaker) {
 			// set speaking character and new dialog
 			const part = parts.shift();
-			nextDelay = part.delay;
+			nextDelay = getRandomDelay();
 			currentSpeaker = part.speaker;
 			currentText = speakers[part.speaker];
 			currentText.isActive = true;
