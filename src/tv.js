@@ -62,9 +62,9 @@ lines.start = function() {
 
 	/* load doodoo comps */
 	async function loadComps() {
-		const mainTheme = await fetch('./doodoo/compositions/tv1_theme.json')
+		const mainTheme = await fetch('./public/compositions/tv1_theme.json')
 			.then(res => res.json());
-		const tvTheme = await fetch('./doodoo/compositions/tv1_tv.json')
+		const tvTheme = await fetch('./public/compositions/tv1_tv.json')
 			.then(res => res.json());
 		
 		doodoos.main = new Doodoo({ 
@@ -251,8 +251,8 @@ lines.draw = function(timeElapsed) {
 			doodoos.tv.play();
 
 			let channelCount = 0;
-			let channelNumber = Cool.randomInt(3, 6);
-			let channelTime = Cool.randomInt(400, 2000);
+			let channelNumber = Cool.randomInt(5, 8);
+			let channelTime = Cool.randomInt(500, 3000);
 			let channelInterval = setInterval(() => {
 				if (channelCount <= channelNumber) {
 					threeScene.start();

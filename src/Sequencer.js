@@ -76,7 +76,7 @@ function Sequencer(catText, dogText, changeScene) {
 		for (let i = 0; i < cycle.length; i++) {
 			parts.push({
 				text: cycle[i],
-				speaker: i % 2 === 0 ? speaker1 : speaker2;
+				speaker: i % 2 === 0 ? speaker1 : speaker2,
 			});
 		}
 	}
@@ -86,32 +86,30 @@ function Sequencer(catText, dogText, changeScene) {
 		const [speaker1, speaker2] = Cool.shuffle(['cat', 'dog']);
 		currentText = speakers[speaker1];
 
-		parts.push({
-			speaker: speaker1,
-			text: "What was the point of that?",
-		});
+		let cycle = [];
 
-		parts.push({
-			speaker: speaker2,
-			text: cfg.getText(speaker2, 'C', { 'C': [["I think it was about", "DT", "NN", "of", "NN", "."]] }).text,
-		});
+		cycle.push( "What do you think that was about?" );
+		cycle.push(	cfg.getSentence(speaker2, 'C', { 'C': [["I think it was about", "DT", "NN", "of", "NN", "."]] }) );
+		cycle.push( cfg.getSentence(speaker1, 'C', { 'C': [["You don't think it was about", "Q"]] }) );
+		cycle.push( cfg.getSentence(speaker2, 'C', { 'C': [["I guess it could be", "S"]] }) );
+		
+		let randomDialogs = Cool.choice([1, 3, 5]);
+		for (let i = 0; i < randomDialogs; i++) {
+			const speaker = i % 2 === 0 ? speaker1 : speaker2;
+			cycle.push( cfg.getSentence(speaker, 'C', { 'C': [Cool.choice(['S', 'S', 'E', 'F', 'Q'])] }) );
+		}
 
-		parts.push({
-			speaker: speaker1,
-			text: cfg.getText(speaker1, 'C', { 'C': [["You don't think it was", "Q"]] }).text,
-		});
+		cycle.push( cfg.getSentence(speaker1, 'C', { 'C': [["I don't think we really know what it was about."]] }) );
 
-		parts.push({
-			speaker: speaker2,
-			text: cfg.getText(speaker2, 'C', { 'C': [["I guess it might have been", "S"]] }).text,
-		});
+		console.log(cycle);
 
-		// add raandom here
+		for (let i = 0; i < cycle.length; i++) {
+			parts.push({
+				text: cycle[i],
+				speaker: i % 2 === 0 ? speaker1 : speaker2,
+			});
+		}
 
-		parts.push({
-			speaker: speaker1,
-			text: cfg.getText(speaker1, 'C', { 'C': [["I don't think we really know what it was about."]] }).text,
-		});
 	}
 
 	function nextPart() {
