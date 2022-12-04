@@ -16,6 +16,22 @@
 		["Let's see what's on the tv."]
 	],
 
-	"B": []
+	"B": [
+		["B0", "B1", "B2", "B3", "B4", "B5"],
+		["B0", "B1", "B2", "B3", "B4", "B4", "B5"],
+		["B0", "B1", "B2", "B3", "B4", "B4", "B4", "B5"],
+		["B0", "B1", "B2", "B3", "B4", "B4", "B4", "B4", "B5"]
+	],
 
+	"B0": [["What do you think that was about?"]],
+	"B1": [["I think it was about", "DT", "NN", "IN", "DT", "NN", "." ]],
+	"B2": [["Oh, I think it was", "S"]],
+	"B3": [["I guess it could be that", "S"]],
+	"B4": [["S"]],
+	"B5": [
+		["I don't think we really know what it was about."],
+		["I don't know about that."],
+		["I'm not sure what it was about."],
+		["I don't know."]
+	]
 }

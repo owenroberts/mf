@@ -33,6 +33,7 @@ function Sequencer(catText, dogText, changeScene) {
 	let codexURL = './public/grammars/CODEX-cfg.json';
 	let mystyURL = './public/grammars/The_Mystery_of_the_Apocalypse-cfg.json';
 	let cycleURL = './public/grammars/cycle.json';
+	let cycleFile;
 	let cfg = new CFGGenerator({
 		tagChance: 1,
 		filterChance: 1,
@@ -41,16 +42,22 @@ function Sequencer(catText, dogText, changeScene) {
 	async function loadGrammarFiles() {
 		const codexFile = await fetch(codexURL).then(res => res.json());
 		const mystyFile = await fetch(mystyURL).then(res => res.json());
-		const cycleFile = await fetch(cycleURL).then(res => res.json());
+		cycleFile = await fetch(cycleURL).then(res => res.json());
+		// console.log(cycleFile);
 		
 		cfg.feed('cat', mystyFile);
-		cfg.feed('cat', cycleFile);
+		cfg.feed('cat', cycleFile, false);
 		cfg.feed('dog', codexFile);
-		cfg.feed('dog', cycleFile);
+		cfg.feed('dog', cycleFile, false);
 
 		getDialog('A');
+		// let aDialog = Cool.choice(cycleFile.A).map(tag => cfg.getSentence('cat', tag, true));
+		// let catDialog = Cool.choice(cycleFile.B).map(tag => cfg.getSentence('cat', tag, true));
+		// let dogDialog = Cool.choice(cycleFile.B).map(tag => cfg.getSentence('dog', tag, true));
 
-		
+		// catDialog.forEach(s => console.log(s));
+		// dogDialog.forEach(s => console.log(s)):
+
 	}
 	loadGrammarFiles();
 
@@ -68,77 +75,20 @@ function Sequencer(catText, dogText, changeScene) {
 
 	function getRandomDelay(min, max) {
 		return Cool.randomInt(min || 1, max || 2);
-	}
+}
 
 	function getDialog(start) {
 		currentDialog = start;
 		const [speaker1, speaker2] = Cool.shuffle(['cat', 'dog']);
 		currentText = speakers[speaker1];
 
-		let cycle = cfg.getText(speaker1, start);
-
-		for (let i = 0; i < cycle.tags.length; i++) {
-			parts.push({
-				text: cycle.tags[i].word,
-				speaker: i % 2 === 0 ? speaker1 : speaker2,
-			});
-		}
-	}
-
-	function startDialog() {
-		currentDialog = 'start';
-		const [speaker1, speaker2] = Cool.shuffle(['cat', 'dog']);
-		currentText = speakers[speaker1];
-
-		let cycle = [];
-		cycle.push( "I'm hungry." );
-		cycle.push( "Me too." );
-		cycle.push( "When will we eat again?" );
-		cycle.push( "I don't know." );
-		cycle.push( "Should we watch some tv?" );
+		let cycle = Cool.choice(cycleFile[start]);
 
 		for (let i = 0; i < cycle.length; i++) {
-			parts.push({
-				text: cycle[i],
-				speaker: i % 2 === 0 ? speaker1 : speaker2,
-			});
+			let speaker = i % 2 === 0 ? speaker1 : speaker2;
+			let text = cfg.getSentence(speaker, cycle[i], true);
+			parts.push({ text, speaker });
 		}
-	}
-
-	function newDialog() {
-		currentDialog = 'new';
-		const [speaker1, speaker2] = Cool.shuffle(['cat', 'dog']);
-		currentText = speakers[speaker1];
-
-		let cycle = [];
-		cycle.push( "What do you think that was about?" );
-		cycle.push(	cfg.getText(speaker2, 'C', { 'C': [["I think it was about", "DT", "NN", "of", "NN", "."]] }).text );
-		
-		// cycle.push( cfg.getText(speaker1, 'C', { 'C': [["You don't think it was about", "S", "?"]] }).text );
-		// replace question when there are Qs
-		cycle.push( cfg.getText(speaker1, 'C', { 'C': [["Oh I think it was about", "S"]] }).text );
-		
-		cycle.push( cfg.getText(speaker2, 'C', { 'C': [["I guess it could be", "S"]] }).text );
-		
-		let randomDialogs = Cool.choice([1, 3, 5]);
-		for (let i = 0; i < randomDialogs; i++) {
-			const speaker = i % 2 === 0 ? speaker1 : speaker2;
-			cycle.push( cfg.getText(speaker, 'C', { 'C': [['S']] 
-				// [Cool.choice(['S', 'S', 'E', 'F', 'Q'])] 
-			}).text );
-		}
-
-		cycle.push( cfg.getText(speaker1, 'C', { 'C': [["I don't think we really know what it was about."]] }).text );
-
-		// console.log(cycle);
-
-		for (let i = 0; i < cycle.length; i++) {
-			parts.push({
-				text: cycle[i],
-				speaker: i % 2 === 0 ? speaker1 : speaker2,
-			});
-		}
-
 	}
 
 	function nextPart() {
@@ -157,15 +107,16 @@ function Sequencer(catText, dogText, changeScene) {
 
 				// newDialog after three scene ...
 				currentSpeaker = false;
-				newDialog();
+				// newDialog();
+				getDialog('B');
 				
 				// start three js scene here
 				isActive = false;
 				return true;
 			
-			} else if (currentDialog === 'new') {
+			} else if (currentDialog === 'B') {
 				currentSpeaker = false;
-				startDialog();
+				getDialog('A');
 			}
 		}
 
@@ -173,6 +124,7 @@ function Sequencer(catText, dogText, changeScene) {
 			// set speaking character and new dialog
 			const part = parts.shift();
 			nextDelay = getRandomDelay();
+			// part.speaker undefined ...
 			currentSpeaker = part.speaker;
 			currentText = speakers[part.speaker];
 			currentText.isActive = true;

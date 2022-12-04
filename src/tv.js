@@ -84,13 +84,15 @@ lines.start = function() {
 		doodoos.main.play();
 	}
 
-	const title = new Sprite(0, 0);
+	const title = new Sprite(lines.halfWidth, 300);
+	title.center = true;
 	title.addAnimation(sprites.title);
 	lines.scenes.start.addToDisplay(title);
 
 	const startSoundButton = new TextButton({
-		x: 100, 
-		y: 400, 
+		x: lines.halfWidth, 
+		y: 420, 
+		center: true,
 		msg: 'Click to start with sound', 
 		wrap: 26, 
 		letters: sprites.cat_letters,
@@ -107,8 +109,9 @@ lines.start = function() {
 	};
 
 	const startSilentButton = new TextButton({
-		x: 100, 
+		x: lines.halfWidth, 
 		y: 500, 
+		center: true,
 		msg: 'Click to start without sound', 
 		wrap: 29, 
 		letters: sprites.cat_letters,
@@ -251,8 +254,8 @@ lines.draw = function(timeElapsed) {
 		if (sequenceIsFinished === true) {
 			changeScene('tv');
 			threeScene.start();
-			doodoos.main.stop();
-			doodoos.tv.play();
+			if (useSound) doodoos.main.stop();
+			if (useSound) doodoos.tv.play();
 
 			let channelCount = 0;
 			let channelNumber = Cool.randomInt(5, 8);
@@ -263,8 +266,8 @@ lines.draw = function(timeElapsed) {
 					channelCount++;
 				} else {
 					threeScene.stop();
-					doodoos.tv.stop();
-					doodoos.main.play();
+					if (useSound) doodoos.tv.stop();
+					if (useSound) doodoos.main.play();
 
 					changeScene('main');
 					setInterval(() => { sequencer.start(); }, 300);

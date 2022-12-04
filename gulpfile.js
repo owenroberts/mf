@@ -109,7 +109,7 @@ function watchTask(){
 	}
 
 	if (textTools) {
-		watch(textTools.files, series(textTools.exportTask, textToolsCopy))
+		watch(textTools.files, series(textTools.exportTask, textToolsCopy));
 	}
 }
 
