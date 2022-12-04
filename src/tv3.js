@@ -75,7 +75,7 @@ function ThreeScene() {
 		color: 0x111111,
 	});
 	const floorMesh = new THREE.Mesh( floorGeo, floorMat );
-	floorMesh.position.set(0, 0, -2);
+	floorMesh.position.set(0, 0, -4);
 	scene.add(floorMesh);
 
 	const loadingManager = new THREE.LoadingManager();
@@ -120,13 +120,8 @@ function ThreeScene() {
 	const letterGroup = new THREE.Group();
 	scene.add( letterGroup );
 
-	function Rotator( model ) {
+	function Rotator( model, group ) {
 
-		// model.rotation.set(
-		// 	Cool.random(Math.PI * 2), 
-		// 	Cool.random(Math.PI * 2), 
-		// 	Cool.random(Math.PI * 2),
-		// );
 		let rotate = Cool.choice([true, false]);
 
 		let rx = rotate ? Cool.random(0.0001, 0.01) : 0;
@@ -139,6 +134,22 @@ function ThreeScene() {
 
 		let dir = Cool.choice(['x', 'y', 'z']);
 		let ms = Cool.random(-0.01, 0.01);
+
+		if (!move && !rotate && group) {
+
+			let left = model.clone();
+			let right = model.clone();
+			left.position.x -= 1;
+			right.position.x += 1;
+
+			let rz = Cool.random(Math.PI * 2);
+			model.rotation.z = rz;
+			left.rotation.z = rz;
+			right.rotation.z = rz;
+
+			group.add(left);
+			group.add(right);
+		}
 
 		return {
 			update() {
@@ -203,22 +214,33 @@ function ThreeScene() {
 			letterGroup.remove( letterGroup.children[i] );
 		}
 
-		const letterList = Object.keys(letterModels);
-		const objIndexes = Cool.shuffle([0, 1, 2, 3, 4, 5, 6, 7, 8]);
+		const letterList = Object.keys( letterModels );
+		const objIndexes = Cool.shuffle( [0, 1, 2, 3, 4, 5, 6, 7, 8] );
 
 		// letter grid
-		const d = [4, 3];
+
+		let cols = Cool.randomInt(2, 4);
+		let rows = Cool.randomInt(2, 4);
+		let w = 5;
+		let h = 4;
+		let cw = w * 2 / cols;
+		let rh = h * 2 / rows;
+
+		let layers = Cool.randomInt(1, 3);
+
 		const letterMaterial = getRandomMaterial();
-		for (let i = 0; i < 3; i++) {
-			for (let j = 0; j < 3; j++) {
-				const x = i * d[0] - d[0];
-				const y = j * d[1] - d[1];
+		for (let i = 0; i <= cols; i++) {
+			for (let j = 0; j <= rows; j++) {
+				
+				const x = i * cw - w;
+				const y = j * rh - h;
+				const z = 0; // l * -2;
 
 				let doContinue = false;
 				for (const key in chars) {
 					const { index, model } = chars[key];
 					if (objIndexes[index] === i + j * 3) {
-						model.position.set( x, y, 0 );
+						model.position.set( x, y, z );
 						model.rotation.set( 0, 0, 0 ); // reset
 						model.traverse( child => {
 							if ( child.material ) child.material = letterMaterial;
@@ -233,9 +255,9 @@ function ThreeScene() {
 				const letter = Cool.choice( Object.keys( letterModels ) );
 				const letterMesh = letterModels[letter].clone();
 				letterMesh.material = letterMaterial;
-				letterMesh.position.set(x, y, 0);
+				letterMesh.position.set(x, y, z);
 				letterGroup.add( letterMesh );
-				rotators.push( Rotator( letterMesh ) );
+				rotators.push( Rotator( letterMesh, letterGroup ) );
 			}
 		}
 
