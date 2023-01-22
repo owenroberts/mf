@@ -14,10 +14,6 @@ const lines = new Game({
 	events: ['mouse']
 });
 
-lines.load({
-	sprites: 'public/sprites.json'
-});
-
 let cat, dog, tv, catText, dogText;
 let speakers;
 let catClose, dogClose, tvClose;
@@ -27,6 +23,7 @@ let useSound = false;
 let catTrack = 22, dogTrack = 24;
 let threeScene = ThreeScene();
 let doodoos = {};
+let mainTheme, tvTheme;
 
 /* debug */
 let pause = false;
@@ -40,7 +37,36 @@ document.addEventListener('keydown', ev => {
 	if (Cool.keys[ev.which] === 's') {
 		threeScene.start();
 	}
-})
+});
+
+/* load doodoo comps -> then load lines */
+async function loadComps() {
+	mainTheme = await fetch('./public/compositions/tv1_theme.json')
+		.then(res => res.json());
+	tvTheme = await fetch('./public/compositions/tv1_tv.json')
+		.then(res => res.json());
+
+	lines.load({
+		sprites: 'public/sprites.json'
+	});
+}
+loadComps();
+
+function startMainTheme() {
+	doodoos.main = new Doodoo({ 
+		...mainTheme, 
+		samplesURL: './doodoo/samples/',
+		volume: -20,
+		autoStart: false, 
+	});
+	doodoos.tv = new Doodoo({ 
+		...tvTheme, 
+		autoStart: false, 
+		samplesURL: './doodoo/samples/',
+		volume: -6,
+	});
+	doodoos.main.play();
+}
 
 lines.start = function() {
 
@@ -59,30 +85,6 @@ lines.start = function() {
 		delay: 60,
 	});
 	lines.scenes.loading.addToDisplay(loadingText);
-
-	/* load doodoo comps */
-	async function loadComps() {
-		const mainTheme = await fetch('./public/compositions/tv1_theme.json')
-			.then(res => res.json());
-		const tvTheme = await fetch('./public/compositions/tv1_tv.json')
-			.then(res => res.json());
-		
-		doodoos.main = new Doodoo({ 
-			...mainTheme, 
-			samplesURL: './doodoo/samples/',
-			volume: -20,
-			autoStart: false, 
-		});
-		
-		doodoos.tv = new Doodoo({ 
-			...tvTheme, 
-			autoStart: false, 
-			samplesURL: './doodoo/samples/',
-			volume: -6,
-		});
-
-		doodoos.main.play();
-	}
 
 	const title = new Sprite(lines.halfWidth, 300);
 	title.center = true;
@@ -103,7 +105,8 @@ lines.start = function() {
 	startSoundButton.onClick = function() {
 		lines.scenes.current = 'main';
 		useSound = true;
-		loadComps();
+		// loadComps();
+		startMainTheme();
 		sequencer.setupVoice();
 		sequencer.start();
 	};

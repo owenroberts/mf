@@ -64,18 +64,26 @@ function Sequencer(catText, dogText, changeScene) {
 	function setupVoice() {
 		if (!window.speechSynthesis) return;
 		voiceSynth = window.speechSynthesis;
-		voiceSynth.onvoiceschanged = function() {
-			const voiceList = voiceSynth.getVoices();
-			const fred = voiceList.find(v => v.name === 'Fred');
-			const victoria = voiceList.find(v => v.name === 'Victoria');
-			voices.cat = victoria ? victoria : voiceList[1];
-			voices.dog = fred ? fred : voiceList[0];
-		};
+		// not using onvoiceschanged bc error in safari
+		let loadVoiceInterval = setInterval(() => {
+			if (voiceSynth.getVoices()) {
+				setupVoices();
+				clearInterval(loadVoiceInterval);
+			}
+		}, 60);
+	}
+
+	function setupVoices() {
+		const voiceList = voiceSynth.getVoices();
+		const fred = voiceList.find(v => v.name === 'Fred');
+		const victoria = voiceList.find(v => v.name === 'Victoria');
+		voices.cat = victoria ? victoria : voiceList[1];
+		voices.dog = fred ? fred : voiceList[0];
 	}
 
 	function getRandomDelay(min, max) {
 		return Cool.randomInt(min || 1, max || 2);
-}
+	}
 
 	function getDialog(start) {
 		currentDialog = start;

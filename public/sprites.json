@@ -12,6 +12,4 @@
 	"cat_letters": { "src": "lines/drawings/cat_letters.json" },
 	"dog_letters": { "src": "lines/drawings/dog_letters.json" },
 	"title": { "src": "lines/drawings/mystery_fragments.json" }
-
-
 }
